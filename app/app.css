@@ -8,8 +8,7 @@
 
 html,
 body {
-  @apply bg-white dark:bg-gray-950;
-
+  /* DaisyUI 테마 색상만 사용, 하드코딩된 배경 제거 */
   @media (prefers-color-scheme: dark) {
     color-scheme: dark;
   }

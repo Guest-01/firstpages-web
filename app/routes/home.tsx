@@ -1,5 +1,19 @@
 import type { Route } from "./+types/home";
 import SiteCard from "../components/SiteCard";
+import { useLoaderData } from "react-router";
+
+export async function loader() {
+  // 서버에서만 동작하도록 동적 import 사용
+  const fs = await import("fs");
+  const path = await import("path");
+  const __dirname = path.dirname(new URL(import.meta.url).pathname);
+  const filePath = path.resolve(__dirname, "../../scraped_data/all_articles.json");
+  const file = fs.readFileSync(filePath, "utf-8");
+  const articles = JSON.parse(file);
+  return new Response(JSON.stringify(articles), {
+    headers: { "Content-Type": "application/json" },
+  });
+}
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -9,29 +23,12 @@ export function meta({ }: Route.MetaArgs) {
 }
 
 export default function Home() {
-  const dummySites = [
-    {
-      site: "디시인사이드",
-      posts: [
-        { title: "[HOT] 오늘의 베스트 인기글!", href: "https://example.com/post/1", date: "2025-05-19" },
-        { title: "화제의 게시글을 확인하세요.", href: "https://example.com/post/2", date: "2025-05-18" },
-        { title: "이슈가 되고 있는 게시글 모음!", href: "https://example.com/post/3", date: "2025-05-17" },
-      ],
-    },
-    {
-      site: "클리앙",
-      posts: [
-        { title: "클리앙 인기글 1", href: "https://clien.net/post/1", date: "2025-05-19" },
-        { title: "클리앙 인기글 2", href: "https://clien.net/post/2", date: "2025-05-18" },
-      ],
-    },
-  ];
-
+  const articles = useLoaderData() as Record<string, { title: string; href: string; date: string }[]>;
   return (
     <main className="w-full max-w-6xl mx-auto px-1 sm:px-2 py-4">
       <div className="grid gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-        {dummySites.map((siteData, idx) => (
-          <SiteCard key={siteData.site + idx} site={siteData.site} posts={siteData.posts} />
+        {Object.entries(articles).map(([site, posts]) => (
+          <SiteCard key={site} site={site} posts={posts} />
         ))}
       </div>
     </main>

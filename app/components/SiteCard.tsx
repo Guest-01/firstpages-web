@@ -1,3 +1,5 @@
+import React, { useState } from "react";
+
 type Post = {
   title: string;
   href: string;
@@ -10,8 +12,10 @@ interface PostCardProps {
 }
 
 export default function PostCard({ site, posts }: PostCardProps) {
+  const [expanded, setExpanded] = useState(false);
+  const visiblePosts = expanded ? posts : posts.slice(0, 5);
   return (
-    <div className="card bg-white dark:bg-gray-900 border border-primary shadow-lg shadow-primary-content w-full">
+    <div className="card bg-base-100 border border-primary shadow-lg w-full">
       <div className="card-body p-2 sm:p-3">
         <div className="flex items-center gap-2 mb-1">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-primary">
@@ -22,24 +26,43 @@ export default function PostCard({ site, posts }: PostCardProps) {
         <div className="overflow-x-auto">
           <table className="table w-full text-sm">
             <tbody>
-              {posts.map((post, idx) => (
+              {visiblePosts.map((post, idx) => (
                 <tr key={idx} className="hover:bg-primary/10 transition-colors">
                   <td className="p-1">
                     <a
                       href={post.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="link link-hover text-base-content line-clamp-1"
+                      className="text-base-content line-clamp-1"
                     >
                       {post.title}
                     </a>
                   </td>
-                  <td className="whitespace-nowrap text-xs text-base-content/40 text-right align-middle p-1">{post.date}</td>
+                  <td className="font-mono whitespace-nowrap text-xs text-base-content/40 text-right align-middle p-1">{post.date}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        {posts.length > 5 && (
+          <button
+            className="btn btn-block btn-xs btn-ghost flex items-center gap-2 text-base-content/50 hover:text-base-content"
+            onClick={() => setExpanded((v) => !v)}
+            aria-label={expanded ? '접기' : '더보기'}
+          >
+            {expanded ? (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" /></svg>
+                접기
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                더보기
+              </>
+            )}
+          </button>
+        )}
       </div>
     </div>
   );
