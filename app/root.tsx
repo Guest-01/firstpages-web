@@ -30,6 +30,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
       ? document.documentElement.getAttribute("data-theme") || "light"
       : "light"
   );
+  const [openInNewTab, setOpenInNewTab] = useState(() => {
+    if (typeof window !== "undefined") {
+      const stored = window.localStorage.getItem("openInNewTab");
+      return stored === null ? true : stored === "true";
+    }
+    return true;
+  });
   useEffect(() => {
     const observer = new MutationObserver(() => {
       setTheme(document.documentElement.getAttribute("data-theme") || "light");
@@ -37,6 +44,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
     return () => observer.disconnect();
   }, []);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("openInNewTab", String(openInNewTab));
+    }
+  }, [openInNewTab]);
   return (
     <html lang="en">
       <head>
@@ -66,30 +78,42 @@ export function Layout({ children }: { children: React.ReactNode }) {
               FirstPages
             </span>
           </div>
-          <button
-            className="btn btn-circle btn-ghost btn-sm"
-            aria-label="다크모드 전환"
-            onClick={() => {
-              const html = document.documentElement;
-              const current = html.getAttribute('data-theme');
-              html.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
-            }}
-          >
-            {theme === 'dark' ? (
-              // 해 아이콘 (라이트모드로 전환)
-              <svg className="w-5 h-5 text-yellow-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="5" />
-                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-              </svg>
-            ) : (
-              // 달 아이콘 (다크모드로 전환)
-              <svg className="w-5 h-5 text-yellow-200" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z" />
-              </svg>
-            )}
-          </button>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <label className="flex items-center gap-1 cursor-pointer select-none">
+              <span className="text-xs sm:text-sm font-medium text-gray-50">새 탭으로 열기</span>
+              <input
+                type="checkbox"
+                className="toggle toggle-primary toggle-xs sm:toggle-sm"
+                checked={openInNewTab}
+                onChange={e => setOpenInNewTab(e.target.checked)}
+                aria-label="새 탭으로 열기"
+              />
+            </label>
+            <button
+              className="btn btn-circle btn-ghost btn-xs sm:btn-sm"
+              aria-label="다크모드 전환"
+              onClick={() => {
+                const html = document.documentElement;
+                const current = html.getAttribute('data-theme');
+                html.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+              }}
+            >
+              {theme === 'dark' ? (
+                // 해 아이콘 (라이트모드로 전환)
+                <svg className="w-5 h-5 text-yellow-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="5" />
+                  <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+                </svg>
+              ) : (
+                // 달 아이콘 (다크모드로 전환)
+                <svg className="w-5 h-5 text-yellow-200" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z" />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
-        {children}
+        {React.cloneElement(children as React.ReactElement, { openInNewTab })}
         <ScrollRestoration />
         <Scripts />
       </body>

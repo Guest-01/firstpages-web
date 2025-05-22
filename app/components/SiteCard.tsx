@@ -14,8 +14,18 @@ interface PostCardProps {
 export default function PostCard({ site, posts }: PostCardProps) {
   const [expanded, setExpanded] = useState(false);
   const visiblePosts = expanded ? posts : posts.slice(0, 5);
+
+  const handlePostClick = (href: string) => {
+    const openInNewTab = window.localStorage.getItem("openInNewTab") !== "false";
+    if (openInNewTab) {
+      window.open(href, "_blank", "noopener,noreferrer");
+    } else {
+      window.location.href = href;
+    }
+  };
+
   return (
-    <div className="card bg-base-100 border border-primary shadow-lg w-full">
+    <div className="card bg-base-100 border border-primary shadow-lg shadow-primary-content w-full">
       <div className="card-body p-2 sm:p-3">
         <div className="flex items-center gap-2 mb-1">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-primary">
@@ -29,16 +39,20 @@ export default function PostCard({ site, posts }: PostCardProps) {
               {visiblePosts.map((post, idx) => (
                 <tr key={idx} className="hover:bg-primary/10 transition-colors">
                   <td className="p-1">
-                    <a
-                      href={post.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-base-content line-clamp-1"
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      className="text-base-content line-clamp-1 cursor-pointer select-none hover:underline focus:underline outline-none"
+                      onClick={() => handlePostClick(post.href)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' || e.key === ' ') handlePostClick(post.href);
+                      }}
+                      aria-label={post.title}
                     >
                       {post.title}
-                    </a>
+                    </div>
                   </td>
-                  <td className="font-mono whitespace-nowrap text-xs text-base-content/40 text-right align-middle p-1">{post.date}</td>
+                  <td className="whitespace-nowrap text-xs text-base-content/40 text-right align-middle p-1">{post.date}</td>
                 </tr>
               ))}
             </tbody>
@@ -46,7 +60,7 @@ export default function PostCard({ site, posts }: PostCardProps) {
         </div>
         {posts.length > 5 && (
           <button
-            className="btn btn-block btn-xs btn-ghost flex items-center gap-2 text-base-content/50 hover:text-base-content"
+            className="btn btn-xs btn-ghost mt-1 flex items-center gap-1 mx-auto"
             onClick={() => setExpanded((v) => !v)}
             aria-label={expanded ? '접기' : '더보기'}
           >
